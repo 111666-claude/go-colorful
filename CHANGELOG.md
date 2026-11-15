@@ -7,6 +7,10 @@ The format of this file is based on [Keep a Changelog](https://keepachangelog.co
 but only releases after v1.0.3 properly adhere to it.
 
 ## [Unreleased]
+### Added
+- `ContrastPalette`, `ContrastPaletteEx`, and `ContrastPaletteWithRand` generate reproducible palettes whose colors are all legible against a given background (minimum WCAG contrast ratio) and pairwise distinct (minimum CIEDE2000 distance), with explicit errors for invalid arguments, unreachable contrast, and exhausted search budgets
+- `Color.RelativeLuminance` and `ContrastRatio` for WCAG relative luminance and contrast ratio calculations
+- `WCAGMinContrastRatio`, `WCAGMaxContrastRatio`, and `DefaultContrastPaletteSearchBudget` constants
 
 ## [1.4.1] - 2026-08-02
 ### Fixed

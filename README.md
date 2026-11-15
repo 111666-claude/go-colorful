@@ -370,6 +370,47 @@ from top to bottom: `Warm`, `FastWarm`, `Happy`, `FastHappy`, `Soft`,
 
 Again, the code used for generating the above image is available as [doc/palettegens/palettegens.go](https://github.com/lucasb-eyer/go-colorful/blob/master/doc/palettegens/palettegens.go).
 
+### Accessible, constrained palettes
+
+When the palette is used for text or status colors in a UI (for example a game
+HUD), "pretty and distinct" is not enough: every color must also stay legible
+against a known background. `ContrastPalette` generates a palette in which
+
+* every color has a WCAG contrast ratio of at least `minContrast` against the
+  given background, and
+* every pair of colors is at least `minDistance` apart in CIEDE2000.
+
+```go
+const bg = colorful.Color{R: 0.05, G: 0.05, B: 0.07}
+pal, err := colorful.ContrastPalette(
+    8,      // number of colors
+    bg,     // background the palette has to be legible against
+    4.5,    // minimum WCAG contrast ratio (4.5 = AA body text, 3.0 = large text)
+    0.1,    // minimum pairwise CIEDE2000 distance
+    12345,  // seed; the same seed reproduces the same palette
+)
+```
+
+All returned colors are valid sRGB colors. The search uses a finite number of
+random candidates (see `DefaultContrastPaletteSearchBudget`), so it always
+terminates. Rather than lowering the thresholds, it returns an error that can
+be tested with `errors.Is`:
+
+* `ErrInvalidColorCount`, `ErrInvalidBackground`, `ErrInvalidContrast`,
+  `ErrInvalidDistance`, `ErrInvalidSearchBudget` for bad arguments, including
+  NaN/Inf thresholds;
+* `ErrUnreachableContrast` when no sRGB color at all can reach `minContrast`
+  against that background (for example 7:1 against mid-gray, which caps out at
+  about 5:1);
+* `ErrNoPaletteSolution` when the search budget runs out before enough colors
+  satisfying both constraints are found.
+
+`ContrastPaletteEx` accepts a `ContrastPaletteSettings` struct with the same
+fields plus a custom `SearchBudget`, and `ContrastPaletteWithRand` lets you
+supply your own `RandInterface`. The underlying primitives are exported as
+well: `Color.RelativeLuminance`, `ContrastRatio`, and the WCAG ratio range
+constants `WCAGMinContrastRatio`/`WCAGMaxContrastRatio`.
+
 ### Sorting colors
 
 Sorting colors is not a well-defined operation.  For example, {dark blue, dark red, light blue, light red} is already sorted if darker colors should precede lighter colors but would need to be re-sorted as {dark red, light red, dark blue, light blue} if longer-wavelength colors should precede shorter-wavelength colors.
