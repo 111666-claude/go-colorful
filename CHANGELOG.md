@@ -7,6 +7,11 @@ The format of this file is based on [Keep a Changelog](https://keepachangelog.co
 but only releases after v1.0.3 properly adhere to it.
 
 ## [Unreleased]
+### Added
+- `SimulateCVD`, which previews a color under protan, deutan, or tritan color
+  vision deficiency at a continuous severity from 0 to 1, using the Machado,
+  Oliveira & Fernandes (2009) model in linear RGB. Also adds the `CVDKind` type
+  with `Protan`, `Deutan`, and `Tritan` constants.
 
 ## [1.4.1] - 2026-08-02
 ### Fixed

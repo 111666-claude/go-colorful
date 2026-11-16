@@ -391,6 +391,29 @@ r, g, b := colorful.Hex("#FF0000").FastLinearRgb()
 
 TODO: describe some more.
 
+### Previewing colors with color vision deficiency (CVD)
+
+`SimulateCVD` returns a color as it is perceived by someone with protan,
+deutan, or tritan color vision deficiency, at a severity from 0 (normal vision)
+to 1 (full dichromacy). It is meant for previewing things like UI status colors
+or chart palettes.
+
+```go
+warning := colorful.Hex("#E8A33D")
+preview, err := colorful.SimulateCVD(warning, colorful.Deutan, 0.7)
+if err != nil {
+    // unknown kind, severity outside [0, 1], or a non-finite input color
+}
+```
+
+The simulation applies the matrices published by [Machado, Oliveira &
+Fernandes (2009)](https://www.inf.ufrgs.br/~oliveira/pubs_files/CVD_Simulation/CVD_Simulation.html)
+in *linear* RGB, and re-encodes the result to displayable sRGB. Intermediate
+severities are linearly interpolated between the published matrices at steps of
+0.1. Results outside the sRGB gamut are clipped per channel to [0, 1], so the
+returned color is always valid; neutral grays remain neutral. At severity 0, an
+in-gamut color is returned unchanged.
+
 ### Want to use some other reference point?
 
 ```go
