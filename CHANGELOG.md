@@ -7,6 +7,8 @@ The format of this file is based on [Keep a Changelog](https://keepachangelog.co
 but only releases after v1.0.3 properly adhere to it.
 
 ## [Unreleased]
+### Added
+- `Color.GamutMapOkLch` maps wide-gamut colors (e.g. Display-P3) into the sRGB gamut by reducing OkLch chroma at constant lightness and hue, instead of per-channel clamping which shifts the hue of saturated colors. Returns an error for non-finite or unrepresentable inputs.
 
 ## [1.4.1] - 2026-08-02
 ### Fixed
