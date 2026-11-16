@@ -279,6 +279,51 @@ the code in here. Just look at that gorgeous gradient it generated in HCL space:
 
 !["Spectral" colorbrewer gradient in HCL space.](doc/gradientgen/gradientgen.png)
 
+#### Perceptually-uniform multi-stop gradients
+
+Sampling a multi-stop gradient at equal parameter intervals makes some stretches
+look crowded and others sparse, because equal parameter steps do not correspond
+to equal perceptual steps. `PerceptualGradient` fixes this by resampling along
+the *cumulative arc length* of the interpolation path in a perceptual color
+space. The stops are projected into CIE L\*a\*b\* (or L\*u\*v\* / OkLab), the
+piecewise path is tessellated into short segments, and the requested number of
+colors is placed at equal cumulative distance along it.
+
+```go
+stops := []colorful.GradientStop{
+    {Pos: 0, Col: colorful.Color{0.0, 0.0, 0.0}}, // black
+    {Pos: 1, Col: colorful.Color{1.0, 0.0, 0.0}}, // red
+    {Pos: 2, Col: colorful.Color{0.0, 0.0, 1.0}}, // blue
+    {Pos: 3, Col: colorful.Color{1.0, 1.0, 1.0}}, // white
+}
+
+// 32 colors, evenly spaced by perceptual distance; the first and last colors
+// are returned exactly as given.
+colors, err := colorful.PerceptualGradient(stops, 32)
+```
+
+Use `PerceptualGradientEx` with `GradientSettings` to choose the color space,
+bound the tessellation precision (`MaxStep`, with a hard `MaxSegments` cap), and
+control out-of-gamut handling. Because blending through a perceptual space can
+leave the sRGB gamut, `GamutClamp` (the default) clamps every result back into
+valid sRGB while `GamutIgnore` returns the raw values for custom gamut mapping:
+
+```go
+colors, err := colorful.PerceptualGradientEx(stops, 64, colorful.GradientSettings{
+    Space:       colorful.LuvSpace(),
+    MaxStep:     0.01,  // max perceptual distance between tessellation points
+    MaxSegments: 100000,
+    Gamut:       colorful.GamutClamp,
+})
+```
+
+Adjacent duplicate stops collapse into zero-length pieces and do not change the
+path; if every stop is the same color, a solid gradient is returned. Stop
+positions only establish ordering and must be strictly increasing. Invalid
+input (no stops, a single stop, non-finite or out-of-gamut colors, non-increasing
+positions, or fewer than two output colors) returns an error wrapping one of the
+package's `Err*Gradient` sentinels.
+
 ### Getting random colors
 It is sometimes necessary to generate random colors. You could simply do this
 on your own by generating colors with random values. By restricting the random

@@ -7,6 +7,12 @@ The format of this file is based on [Keep a Changelog](https://keepachangelog.co
 but only releases after v1.0.3 properly adhere to it.
 
 ## [Unreleased]
+### Added
+- `PerceptualGradient` and `PerceptualGradientEx` for multi-stop gradients
+  resampled by cumulative perceptual arc length, with `GradientStop`,
+  `GradientSettings`, the `LabSpace`/`LuvSpace`/`OkLabSpace` selectors, gamut
+  handling via `GamutClamp`/`GamutIgnore`, configurable tessellation precision
+  (`MaxStep`/`MaxSegments`), and typed `Err*Gradient` sentinel errors.
 
 ## [1.4.1] - 2026-08-02
 ### Fixed
