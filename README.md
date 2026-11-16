@@ -192,6 +192,36 @@ has been superseded by the slightly more accurate, but much more expensive
 Note that `AlmostEqualRgb` is provided mainly for (unit-)testing purposes. Use
 it only if you really know what you're doing. It will eat your cat.
 
+### Readability contrast (APCA)
+The `Distance*` functions measure how similar two colors are; they do **not**
+predict whether text is readable against a background. For that, go-colorful
+implements the [APCA](https://github.com/Myndex/apca-w3) (Accessible Perceptual
+Contrast Algorithm) W3 0.1.9 contrast function, `ContrastAPCA`.
+
+The result is a signed lightness contrast (Lc): positive means dark text on a
+light background, negative means light text on a dark background. Because the
+algorithm models perception rather than a symmetric distance, foreground and
+background are not interchangeable — swapping them generally changes the value,
+not just its sign.
+
+```go
+darkText, _  := colorful.Hex("#123456")
+lightText, _ := colorful.Hex("#ddeeff")
+lightBg, _   := colorful.Hex("#ddeeff")
+darkBg, _    := colorful.Hex("#123456")
+
+lcDarkOnLight, _ := darkText.ContrastAPCA(lightBg)   // positive
+lcLightOnDark, _ := lightText.ContrastAPCA(darkBg)   // negative
+```
+
+For translucent colors, pass `ColorAlpha` values together with the opaque base
+color seen behind both layers. Alpha is composited (in sRGB space, as the APCA
+reference does) before the contrast is computed; omitting the base for a
+translucent layer returns an error instead of a meaningless number. Inputs with
+non-finite (`NaN`/`Inf`) channels return `ErrAPCANonFinite`, and channels
+outside the sRGB gamut are clamped like `Color.Clamped`, so the function never
+returns `NaN`. See `doc/apcacontrast/apcacontrast.go` for a runnable example.
+
 ### Blending colors
 Blending is highly connected to distance, since it basically "walks through" the
 colorspace thus, if the colorspace maps distances well, the walk is "smooth".

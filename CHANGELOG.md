@@ -7,6 +7,8 @@ The format of this file is based on [Keep a Changelog](https://keepachangelog.co
 but only releases after v1.0.3 properly adhere to it.
 
 ## [Unreleased]
+### Added
+- APCA-W3 0.1.9 readability contrast: `Color.ContrastAPCA` for opaque colors and the alpha-aware `ColorAlpha.ContrastAPCA` with optional opaque base compositing, plus `ColorAlpha`, `AlphaColor`, `ErrAPCANonFinite`, and `ErrAPCATransparent`
 
 ## [1.4.1] - 2026-08-02
 ### Fixed
