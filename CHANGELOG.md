@@ -7,6 +7,16 @@ The format of this file is based on [Keep a Changelog](https://keepachangelog.co
 but only releases after v1.0.3 properly adhere to it.
 
 ## [Unreleased]
+### Added
+- `ColorMix`, a CSS `color-mix()` entry point that interpolates two colors with
+  alpha in either sRGB or OkLCH. It uses premultiplied alpha, supports the
+  OkLCH `shorter`/`longer` hue arcs (including across 0deg, powerless/achromatic
+  hues, and zero-alpha endpoints), and maps out-of-gamut results back into sRGB
+  using the CSS Color 4 binary-search gamut mapping. Invalid inputs, non-finite
+  colors, and unsupported spaces return explicit sentinel errors and never
+  produce NaN. The existing `Blend*` APIs are unchanged.
+- `ColorRGBA` (straight-alpha sRGB color) with `RGBA`/`NRGBA` adapters and
+  `Color.WithAlpha`/`ColorRGBA.Color` conversions.
 
 ## [1.4.1] - 2026-08-02
 ### Fixed

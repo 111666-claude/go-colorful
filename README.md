@@ -210,6 +210,40 @@ color. HCL works in the same vein as HSV (both cylindrical interpolations) but
 it does it right in that there is no green appearing and the lightness changes
 in a linear manner.
 
+### Mixing colors with alpha (CSS `color-mix()`)
+
+The `Blend*` methods above ignore alpha and interpolate the raw coordinates,
+which fades a transparent color through black and takes the "wrong" hue path
+across the 0deg boundary. `ColorMix` instead implements the CSS
+[`color-mix()`](https://www.w3.org/TR/css-color-5/#color-mix) rules: colors
+carry an alpha channel, interpolation uses **premultiplied alpha**, and the
+OkLCH hue can follow the shorter (default) or longer arc. Out-of-gamut results
+are mapped back into sRGB with the CSS Color 4 binary-search gamut mapping, and
+invalid input returns an explicit error instead of a NaN.
+
+```go
+c1 := colorful.ColorRGBA{R: 1, G: 0, B: 0, A: 0.7}
+c2 := colorful.ColorRGBA{R: 0, G: 1, B: 0, A: 0.2}
+
+// "in srgb": premultiplied interpolation.
+mix, err := colorful.ColorMix(c1, c2, colorful.ColorMixOptions{
+    Space: colorful.ColorMixSRGB,
+    P:     0.75, // 25% of c1, 75% of c2
+})
+// mix ≈ ColorRGBA{0.5385, 0.4615, 0, 0.325}
+
+// "in oklch longer hue": the hue sweeps the long way around the wheel.
+ok, err := colorful.ColorMix(
+    colorful.Color{0.932, 0.080, 0.005}.WithAlpha(1),
+    colorful.Color{0.891, 0.723, 0.192}.WithAlpha(1),
+    colorful.ColorMixOptions{Space: colorful.ColorMixOkLch, P: 0.5, Hue: colorful.HueLonger},
+)
+```
+
+`ColorRGBA` is a straight-alpha sRGB color; convert with `Color.WithAlpha` and
+`ColorRGBA.Color`, and use `RGBA` (premultiplied, for `image/color`) or
+`NRGBA` (straight, 8-bit) when drawing.
+
 While this seems all good, you need to know one thing: When interpolating in any
 of the CIE color spaces, you might get invalid RGB colors! This is important if
 the starting and ending colors are user-input or random. An example of where this
