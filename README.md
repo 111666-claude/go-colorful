@@ -370,6 +370,39 @@ from top to bottom: `Warm`, `FastWarm`, `Happy`, `FastHappy`, `Soft`,
 
 Again, the code used for generating the above image is available as [doc/palettegens/palettegens.go](https://github.com/lucasb-eyer/go-colorful/blob/master/doc/palettegens/palettegens.go).
 
+### Extracting a palette from an image
+When importing pixel art (or any raster image) into a theme editor, you often
+need a small set of colors that represent what is actually visible. The
+`ExtractPalette` function takes any `image.Image` and a target number of
+colors, weights the visible pixels by their alpha value, and clusters them in
+the perceptually uniform CIE-L\*a\*b\* color space using a deterministic
+weighted k-means:
+
+```go
+palette, err := colorful.ExtractPalette(img, 5)
+for _, entry := range palette {
+    // entry.Color is a colorful.Color and entry.Weight is the fraction of
+    // the image's visible weight covered by that color (weights sum to 1).
+    fmt.Printf("%s covers %.1f%% of the image\n", entry.Color.Hex(), entry.Weight*100)
+}
+```
+
+Fully transparent pixels are ignored, so a transparent background never
+dominates the palette; partially transparent pixels contribute proportionally
+to their alpha. The algorithm uses no randomness, so the same image always
+produces the same palette. `ExtractPaletteWithMapping` additionally returns a
+row-major pixel-to-palette-index mapping, with `-1` for transparent pixels:
+
+```go
+palette, mapping, err := colorful.ExtractPaletteWithMapping(img, 5)
+bounds := img.Bounds()
+// Pixel (x, y) maps to palette[mapping[(y-bounds.Min.Y)*bounds.Dx()+(x-bounds.Min.X)]].
+```
+
+An error is returned for a nil or empty image, an image without any visible
+pixels, a non-positive color count, or a count larger than the number of
+distinct visible colors in the image.
+
 ### Sorting colors
 
 Sorting colors is not a well-defined operation.  For example, {dark blue, dark red, light blue, light red} is already sorted if darker colors should precede lighter colors but would need to be re-sorted as {dark red, light red, dark blue, light blue} if longer-wavelength colors should precede shorter-wavelength colors.

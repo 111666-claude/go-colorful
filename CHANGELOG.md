@@ -7,6 +7,8 @@ The format of this file is based on [Keep a Changelog](https://keepachangelog.co
 but only releases after v1.0.3 properly adhere to it.
 
 ## [Unreleased]
+### Added
+- `ExtractPalette` and `ExtractPaletteWithMapping` for extracting a representative color palette from an `image.Image`. Pixels are weighted by alpha in CIE-L*a*b* space and clustered with a deterministic weighted k-means, returning per-color coverage weights and an optional pixel-to-palette-index mapping. Fully transparent pixels are ignored.
 
 ## [1.4.1] - 2026-08-02
 ### Fixed
