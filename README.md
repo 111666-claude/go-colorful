@@ -36,6 +36,7 @@ Go-Colorful stores colors in RGB and provides methods from converting these to v
 - **HPLuv:** A variant of HSLuv. The color space is smoother, but only pastel colors can be included. Because the valid colors are limited, it's easy to get invalid Saturation values way above 1.0, indicating the color can't be represented in HPLuv because it's not pastel.
 - **Oklab:** A perceptual color space by Björn Ottosson that improves on CIE-L\*a\*b\* with better perceptual uniformity, especially for blue hues. L in [0..1], a and b roughly in [-0.5..0.5]. See [Oklab](https://bottosson.github.io/posts/oklab/).
 - **Oklch:** The cylindrical (polar) representation of Oklab, similar to HCL. L in [0..1], C roughly in [0..0.5], h° in [0..360].
+- **Jzazbz:** A *perceptually uniform* space designed for HDR and wide-gamut content by Safdar et al. (2017). Unlike the spaces above it is defined on *absolute* CIE XYZ, with Y in cd/m² (nits), and its lightness/chroma encoding stays meaningful up to the 10,000 cd/m² ST 2084 peak. Jz (lightness) is in [0..1], az and bz roughly in [-0.5..0.5]; see the dedicated section below.
 
 For the colorspaces where it makes sense (XYZ, Lab, Luv, HCl), the
 [D65](http://en.wikipedia.org/wiki/Illuminant_D65) is used as reference white
@@ -120,6 +121,36 @@ l, c, h = c.OkLch()
 Note that, because of Go's unfortunate choice of requiring an initial uppercase,
 the name of the functions relating to the xyY space are just off. If you have
 any good suggestion, please open an issue. (I don't consider XyY good.)
+
+### HDR colors and Jzazbz
+`Color` stores relative sRGB, so a color alone does not say how bright it is on
+screen. Jzazbz is defined on absolute luminance, so the API makes that scale
+explicit:
+
+- `Color.Jzazbz()` and `Jzazbz(jz, az, bz)` use the **SDR scale**, where
+  linearized RGB 1.0 is BT.2408 diffuse white at 203 cd/m²
+  (`JzazbzSDRWhiteLuminance`). sRGB white is
+  `jzazbz(0.222065, -0.000161, -0.000117)`.
+- `Color.JzazbzHDR()` and `JzazbzHDR(jz, az, bz)` use the **HDR scale**, where
+  linearized RGB 1.0 is the ST 2084 peak of 10,000 cd/m²
+  (`JzazbzPeakLuminance`). Use this for BT.2100/PQ values normalized to [0, 1].
+- For truth-in-cd/m² work, bypass `Color` altogether:
+  `XyzAbsToJzazbz(x, y, z)` and `JzazbzToXyzAbs(jz, az, bz)` take and return
+  absolute D65 XYZ with Y in cd/m². `Color.JzazbzWithWhite` and
+  `JzazbzWithWhite` do the same for an arbitrary reference white luminance.
+
+Distances in Jzazbz use the same absolute scale, and the SDR and HDR variants
+are not interchangeable: `Color.DistanceJzazbz`, `Color.DistanceJzazbzHDR`, and
+`DistanceJzazbzAbs`. Because the space is perceptual over the *whole* HDR
+range, the same luminance step produces a much larger distance in the shadows
+than in a bright highlight.
+
+All Jzazbz entry points return an `error`. Negative luminance, non-finite
+values, values above the 10,000 cd/m² peak, and triplets that do not map back
+to a physical color are reported as
+`ErrJzazbzNegative`, `ErrJzazbzNonFinite`, `ErrJzazbzOutOfRange`, or
+`ErrJzazbzDegenerate` (test with `errors.Is`). On error they return finite zero
+coordinates; they never return NaN.
 
 ### The `color.Color` interface
 Because a `colorful.Color` implements Go's `color.Color` interface (found in the

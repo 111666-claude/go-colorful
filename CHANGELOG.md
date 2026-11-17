@@ -7,6 +7,9 @@ The format of this file is based on [Keep a Changelog](https://keepachangelog.co
 but only releases after v1.0.3 properly adhere to it.
 
 ## [Unreleased]
+### Added
+- Jzazbz HDR color space: `Color.Jzazbz`, `Jzazbz`, `Color.JzazbzHDR`, `JzazbzHDR`, and the explicit-white variants `Color.JzazbzWithWhite`, `JzazbzWithWhite`, plus absolute-XYZ entry points `XyzAbsToJzazbz` and `JzazbzToXyzAbs` (Y in cd/m², D65 white, 203 cd/m² SDR diffuse white and 10,000 cd/m² PQ peak)
+- Perceptual distances `Color.DistanceJzazbz`, `Color.DistanceJzazbzHDR`, `Color.DistanceJzazbzWithWhite`, and `DistanceJzazbzAbs`, with explicit errors `ErrJzazbzNonFinite`, `ErrJzazbzNegative`, `ErrJzazbzOutOfRange`, `ErrJzazbzDegenerate`, and `ErrJzazbzInvalidWhite`
 
 ## [1.4.1] - 2026-08-02
 ### Fixed
